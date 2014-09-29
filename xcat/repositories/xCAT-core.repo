@@ -1,4 +1,4 @@
-[xcat-core]
+[xcat-2-core]
 name=xCAT 2 Core packages
 baseurl=https://sourceforge.net/projects/xcat/files/yum/2.8/xcat-core
 enabled=1
