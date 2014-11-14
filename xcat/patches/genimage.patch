@@ -1,0 +1,13 @@
+--- /opt/xcat/share/xcat/netboot/rh/genimage	2014-11-11 21:04:54.589645809 +0100
+@@ -541,6 +541,11 @@
+ if (@new_order) {
+     @ndrivers = (@new_order, @ndrivers);
+ }
++if (-f "$rootimg_dir/lib/modules/$kernelver/kernel/drivers/net/ethernet/mellanox/mlx4/mlx4_en.ko") {
++   for (@ndrivers) {
++      s/mlx_en/mlx4_en/;
++  }
++}
+
+ 
+ open($moddeps,"<","$rootimg_dir/lib/modules/$kernelver/modules.dep");
