@@ -1,6 +1,8 @@
 FROM centos:latest
 MAINTAINER hans.then@clustervision.com
-RUN rpm -ivh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
+RUN yum -y install epel-release
+RUN useradd munge -u 1000 -U
+RUN useradd slurm -u 1001 -U
 RUN yum -y install openssh-server openssh-clients python-pip vim-minimal infiniband-diags munge rsyslog bind-utils perl perl-DBI perl-Switch
 RUN yum -y groupinstall "Infiniband Support"
 RUN echo "root:system" | chpasswd && pip install supervisor
@@ -10,7 +12,6 @@ RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
 RUN sed -ri 's/^#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config 
 RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
 RUN sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
-RUN useradd slurm
 RUN mkdir /var/slurm; chown slurm /var/slurm
 RUN mkdir -m 755 -p /var/run/munge
 RUN chown munge /var/run/munge

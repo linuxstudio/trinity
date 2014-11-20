@@ -34,6 +34,7 @@ start() {
     IP=$(host ${NAME}.${VC} | awk -F' ' '{print $4}')
     GW=$(echo $IP | awk -F. '{ print $1"."$2".255.254" }')
 
+    docker pull controller:5050/compute
     state=$(docker inspect --format='{{.State.Running}}' trinity)
     case $state in
         true)
@@ -50,6 +51,8 @@ start() {
                -v /cm/shared/:/cm/shared \
                -v /root:/root \
                -v /cluster/${VC}:/cluster \
+               -v /cluster/${VC}/etc/slurm:/etc/slurm \
+               -v /cluster/${VC}/etc/munge:/etc/munge \
                --hostname=${NAME}.${VC} \
                --name=trinity \
                -d controller:5050/compute
