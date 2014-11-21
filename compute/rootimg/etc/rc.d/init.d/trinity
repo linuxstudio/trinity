@@ -50,6 +50,7 @@ start() {
                -v /dev/infiniband:/dev/infiniband \
                -v /cm/shared/:/cm/shared \
                -v /root:/root \
+               -v /home:/home \
                -v /cluster/${VC}:/cluster \
                -v /cluster/${VC}/etc/slurm:/etc/slurm \
                -v /cluster/${VC}/etc/munge:/etc/munge \
