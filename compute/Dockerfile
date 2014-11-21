@@ -12,9 +12,10 @@ RUN ssh-keygen -t dsa -f /etc/ssh/ssh_host_dsa_key
 RUN sed -ri 's/^#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config 
 RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
 RUN sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
-RUN mkdir /var/slurm; chown slurm /var/slurm
+RUN mkdir /var/run/slurm /var/spool/slurm /var/log/slurm; 
+#RUN chown slurm:slurm /var/run/slurm /var/spool/slurm /var/log/slurm
 RUN mkdir -m 755 -p /var/run/munge
-RUN chown munge /var/run/munge
+RUN chown munge:munge /var/run/munge
 ADD supervisord.conf /usr/etc/supervisord.conf
 CMD ["/usr/bin/supervisord", "-c", "/usr/etc/supervisord.conf"]
 ADD rpms /rpms
