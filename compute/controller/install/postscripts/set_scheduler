@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo 'deadline' > /sys/block/sda/queue/scheduler
+
+exit 0
+

@@ -1,0 +1,94 @@
+#!/bin/sh
+#-- Do not remove following line if you want to make use of CVS version tracking
+#-- $Id: compute.postinstall,v 1.21 2008/09/04 12:05:45 sikorsky Exp $
+#-- jurij.sikorsky@t-systems.cz
+#--
+#-- this script is run after all packages from $profile.pkglist are installed
+#-- 
+#-- it gets these arguments:
+#-- 
+#-- $1 = install root (chroot directory for profile)
+#-- $2 = OS version
+#-- $3 = architecture
+#-- $4 = profile name
+#-- $5 = work dir (where genimage is located)
+#-- 
+#-- 
+installroot=$1
+osver=$2
+arch=$3
+profile=$4
+workdir=$5
+
+#-- Example how /etc/fstab can be automatically generated during image generation:
+cat <<END >$installroot/etc/fstab
+proc            /proc    proc   rw 0 0
+sysfs           /sys     sysfs  rw 0 0
+devpts          /dev/pts devpts rw,gid=5,mode=620 0 0
+/dev/sda1	/var/lib/docker 	ext4	defaults,errors=remount-ro  0  2
+controller:/cluster /cluster nfs rsize=8192,wsize=8192,timeo=14,intr
+controller:/home/trinity /trinity nfs rsize=8192,wsize=8192,timeo=14,intr
+controller:/home /home nfs rsize=8192,wsize=8192,timeo=14,intr
+END
+
+#-- Add slurm and munge users
+#-- Make sure they have the same userids on controller!
+#-- Alternatively, we can just copy /etc/passwd etc.
+chroot $installroot userdel munge
+chroot $installroot userdel slurm
+chroot $installroot useradd munge -u 1000 -U
+chroot $installroot useradd slurm -u 1001 -U
+chroot $installroot mkdir /var/log/munge
+chroot $installroot chown -R munge:munge /var/log/munge
+chroot $installroot chown -R munge:munge /var/lib/munge
+
+#-- Copy 
+# FIXME: we now copy from roots home directory, which is not ideal
+install -D /root/trinity/compute/rootimg/etc/rc.d/init.d/benchmark-trinity $installroot/etc/rc.d/init.d/trinity
+install -D /root/trinity/compute/rootimg/usr/local/sbin/pipework $installroot/usr/local/sbin/pipework
+install -D /root/trinity/compute/rootimg/usr/local/sbin/docker-enter $installroot/usr/local/sbin/docker-enter
+
+#-- Enable services
+chroot $installroot chkconfig rdma on
+chroot $installroot chkconfig ntpd on
+chroot $installroot chkconfig docker on
+chroot $installroot chkconfig munge on
+chroot $installroot chkconfig slurm on
+chroot $installroot chkconfig trinity on
+
+# setup munge and slurm
+chroot $installroot rm -rf /etc/slurm/
+ln -fs /cluster/etc/slurm $installroot/etc/slurm
+chroot $installroot rm -rf /etc/munge/
+ln -fs /cluster/etc/munge $installroot/etc/munge
+chroot $installroot chown -R munge:munge /etc/munge
+
+#-- copy security limits from controller node
+install -d $installroot/etc/security/limits.d
+cp -r /etc/security/limits.d/* $installroot/etc/security/limits.d
+
+#-- copy repositories from controller node
+install -d $installroot/etc/yum.repos.d
+cp -r /etc/yum.repos.d/* $installroot/etc/yum.repos.d
+
+#-- setup ldap authentication against the controller
+install -D /etc/nslcd.conf $installroot/etc/nslcd.conf
+install -D /etc/nsswitch.conf $installroot/etc/nsswitch.conf
+chroot $installroot chkconfig nslcd on
+# authconfig did not work, so we just copied the affected config files.
+#chroot $installroot authconfig-tui --kickstart --enableldapauth --ldapbasedn=dc=cluster --ldapserver=controller
+install -D /etc/nsswitch.conf $installroot/etc/nsswitch.conf
+install -d $installroot/etc/pam.d
+cp -r /etc/pam.d/* $installroot/etc/pam.d
+install -D /etc/pam_ldap.conf $installroot/etc/pam_ldap.conf
+
+chroot $installroot mkdir /var/log/slurm /var/spool/slurm /var/run/slurm
+
+#-- Example of booted image versioning
+#-- We want to know, with what configuration (version of the image) each node was booted.
+#-- Hence, we keep image definition files and postscripts in CVS. During image generation we create file /etc/IMGVERSION and fill it with CVS "$Id$" of files with image definition (.pkglist, .exlist, .repolist, .postinstall). Then, during boot, each  "CVS enabled" postscript (see /install/postscripts/cvs_template.sh and /install/postscripts/cvs_template.pl) adds one line to /etc/IMGVERSION. Then you can determine in any time what image you are running and what postscipts in which versions were run.
+#cat /dev/null > $installroot/etc/IMGVERSION
+#for ext in pkglist exlist postinstall repolist; do
+#  [ -r $workdir/$profile.$ext ] && cat $workdir/$profile.$ext | grep -E '^[[:space:]]*#.*[[:space:]]\$Id' >> $installroot/etc/IMGVERSION
+#done
+
