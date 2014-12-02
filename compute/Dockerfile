@@ -4,7 +4,7 @@ RUN yum -y install epel-release
 RUN useradd munge -u 1000 -U
 RUN useradd slurm -u 1001 -U
 RUN yum -y install openssh-server openssh-clients python-pip vim-minimal infiniband-diags munge rsyslog bind-utils perl perl-DBI perl-Switch
-RUN yum -y install openldap-clients nss-pam-ldapd authconfig
+RUN yum -y install openldap-clients nss-pam-ldapd authconfig environment-modules
 RUN yum -y groupinstall "Infiniband Support"
 RUN echo "root:system" | chpasswd && pip install supervisor
 RUN mkdir -p /var/run/sshd ; chmod -rx /var/run/sshd

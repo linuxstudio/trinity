@@ -51,6 +51,7 @@ start() {
                -v /dev/infiniband:/dev/infiniband \
                -v /trinity:/trinity \
                -v /root:/root \
+               -v /usr/share/Modules/init/.modulespath:/usr/share/Modules/init/.modulespath \
                -v /cluster/${VC}:/cluster \
                -v /cluster/${VC}/etc/slurm:/etc/slurm \
                -v /cluster/${VC}/etc/munge:/etc/munge \
@@ -73,12 +74,13 @@ restart() {
 }
 
 reload() {
+    stop
     docker rm trinity; docker pull controller:5050/trinity
     start
 }
 
 force_reload() {
-    restart
+    reload
 }
 
 rh_status() {
