@@ -30,16 +30,6 @@ perl-ExtUtils-MakeMaker
 perl-Switch
 pam-devel
 
-# slurm
-munge*
-slurm*
-
-# environment modules
-environment-modules
-
-# infiniband diagnostic tools
-infiniband-diags
-
 # Packes required for inifiniband support
 dapl
 ibacm
@@ -72,15 +62,7 @@ tcl
 tk
 urw-fonts
 
-# LDAP authentication
-openldap-clients
-nss-pam-ldapd
-authconfig
-
-# docker
-docker-io
-
 # needed for the trinity startup script
 which
 bind-utils
-openvswitch
+docker

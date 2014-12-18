@@ -31,7 +31,13 @@ controller:/home/trinity /trinity nfs rsize=8192,wsize=8192,timeo=14,intr
 controller:/home /home nfs rsize=8192,wsize=8192,timeo=14,intr
 END
 
-#-- Copy 
+#-- Install openvswitch
+chroot $installroot yum -y install http://repos.fedorapeople.org/repos/openstack/openstack-icehouse/rdo-release-icehouse-3.noarch.rpm
+chroot $installroot yum -y install openvswitch
+
+
+
+#-- Copy supporting files
 install -D /trinity/compute/rootimg/etc/rc.d/init.d/benchmark-trinity $installroot/etc/rc.d/init.d/trinity
 install -D /trinity/compute/rootimg/usr/local/sbin/pipework $installroot/usr/local/sbin/pipework
 install -D /trinity/compute/rootimg/usr/local/sbin/docker-enter $installroot/usr/local/sbin/docker-enter
