@@ -31,6 +31,8 @@ controller:/trinity /trinity nfs rsize=8192,wsize=8192,timeo=14,intr
 controller:/home /home nfs rsize=8192,wsize=8192,timeo=14,intr
 END
 
+#-- A small docker patch
+sed -i 's/OPTIONS=\(.*\)/OPTIONS=--insecure-registry controller:5050 \1/' $installroot/etc/sysconfig/docker
 
 #-- Copy supporting files
 install -D /trinity/compute/rootimg/etc/rc.d/init.d/trinity $installroot/etc/rc.d/init.d/trinity
