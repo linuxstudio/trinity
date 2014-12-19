@@ -1,5 +1,5 @@
 # Trinity Dashboard
-## Author: Abhishek Mukherje (abhishek.mukherjee@clustervision.com)
+#### Author: Abhishek Mukherje (abhishek.mukherjee@clustervision.com)
 
 ================================================================
 

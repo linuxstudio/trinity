@@ -6,8 +6,5 @@ from . import views
 
 urlpatterns = patterns('',
     url(r'^$', views.IndexView.as_view(), name='index'),
-    url(r'^create$', views.CreateClusterView.as_view(), name='create'),
-    url(r'^(?P<tenant_id>[^/]+)/update/$',
-        views.UpdateClusterView.as_view(), name='update'),
-
+    url(r'^edit$', views.EditView.as_view(), name='edit'),
 )
