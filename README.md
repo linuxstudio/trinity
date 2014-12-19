@@ -1,4 +1,4 @@
-fast
-====
+Trinity
+=======
 
-Fast Cloud repository
+Trinity HPC Cloud repository
