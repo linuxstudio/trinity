@@ -239,7 +239,7 @@ class TrinityAPI(object):
           add_num=d_nodes-len(e_nodes)
           h_nodes=self.hardware_nodes(hardware)
           if add_num > h_nodes['unallocated']:
-            ret['error']=no_nodes
+            ret['error']=self.no_nodes
             return ret
           else:
             for node in h_nodes['list_unallocated'][:add_num]:
@@ -249,7 +249,7 @@ class TrinityAPI(object):
         h_nodes=self.hardware_nodes(hardware)
 # Not DRY
         if d_nodes > h_nodes['unallocated']:
-          ret['error']=no_nodes
+          ret['error']=self.no_nodes
           return ret
         else:
           for node in h_nodes['list_unallocated'][:d_nodes]:
@@ -271,7 +271,7 @@ class TrinityAPI(object):
     else:
       ret['status_ok']=True
       ret['change']=False
-    ret['nodeList']=node_list   
+    ret['nodeList']= node_list   
     return ret
    
 #  def cluster_update_containers(cluster,new_container_image):
