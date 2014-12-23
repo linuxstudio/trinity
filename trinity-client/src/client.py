@@ -4,7 +4,7 @@ import json
 import requests
 
 #conf_file=os.path.join(os.path.dirname(os.path.abspath(__file__)),'trinity-client.conf')
-conf_file='../conf/trinity-client.conf'
+conf_file='/etc/trinity/trinity-client.conf'
 class Client(object):
 
   def __init__(self,username=None,password=None,tenant=None,token=None):
@@ -115,7 +115,7 @@ class Client(object):
 
 if __name__ == "__main__":
   c=Client(username='admin',password='system',tenant='admin')
-#  print c.token
+  print c.token
 #  print c.clusters_detail() 
-  print c.cluster_modify(cluster='bio',specs={'gpu':1}) 
+#  print c.cluster_modify(cluster='bio',specs={'gpu':1}) 
      
