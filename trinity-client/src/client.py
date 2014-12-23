@@ -4,33 +4,41 @@ import json
 import requests
 
 #conf_file=os.path.join(os.path.dirname(os.path.abspath(__file__)),'trinity-client.conf')
-conf_file='/etc/trinity/trinity-client.conf'
+conf_file='../conf/trinity-client.conf'
 class Client(object):
 
   def __init__(self,username=None,password=None,tenant=None,token=None):
-    self.username=username
-    self.password=password
-    self.tenant=tenant
-    self.token=token
-    if token:
-      self.payload = { 
-                  "tenant": self.tenant,
-                  "token":    self.token
-                }
-    else:
-      self.payload = { 
-                  "tenant": self.tenant,
-                  "username": self.username,
-                  "password": self.password
-                }
-    self.headers = {'Content-Type': 'application/json', "Accept":"application/json"}
-    
     # This will be in a conf file finder routine
     self.conf_file= conf_file
     self.config(self.conf_file)
     self.trinity_prefix=self.trinity_protocol+'://'+self.trinity_host+':'+self.trinity_port \
                          +'/'+self.trinity_collection+'/v'+self.trinity_version    
-
+    self.username=username
+    self.password=password
+    self.tenant=tenant
+    self.token=token
+    if token:
+      self.headers = {
+       "Content-Type": "application/json", 
+       "Accept":"application/json", 
+       "X-Tenant": self.tenant,
+       "X-Auth-Token":self.token
+      }
+      self.payload = {}
+    else:
+      self.headers = {
+       "Content-Type": "application/json", 
+       "Accept":"application/json", 
+       "X-Tenant": self.tenant
+      }
+      self.payload = { 
+                  "username": self.username,
+                  "password": self.password
+                }
+      self.token=self.login()
+      self.headers.update({"X-Auth-Token":self.token})
+      self.payload={}
+ 
   def config(self,file):
     config=SafeConfigParser()
     config.read(file)
@@ -40,6 +48,10 @@ class Client(object):
         setattr(self,option,value)
 
 ############################################################################################################
+
+  def login(self):
+    r = requests.post(self.trinity_prefix+'/login', data=json.dumps(self.payload), headers=self.headers)
+    return r.json()["token"] 
  
   def hardwares_list(self):
     r = requests.get(self.trinity_prefix+'/hardwares', data=json.dumps(self.payload), headers=self.headers)
@@ -103,6 +115,7 @@ class Client(object):
 
 if __name__ == "__main__":
   c=Client(username='admin',password='system',tenant='admin')
-  print c.clusters_detail() 
-#  print c.cluster_modify(cluster='b',specs={'hm':1,'gpu':1}) 
+#  print c.token
+#  print c.clusters_detail() 
+  print c.cluster_modify(cluster='bio',specs={'gpu':1}) 
      

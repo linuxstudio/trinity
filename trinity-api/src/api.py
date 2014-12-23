@@ -1,7 +1,7 @@
 import os
 import shutil
 from ConfigParser import SafeConfigParser
-from bottle import Bottle,get,put,post,delete,run,request,abort
+from bottle import Bottle,get,put,post,delete,run,request,response,abort
 import json
 import requests
 from collections import defaultdict
@@ -20,10 +20,16 @@ class TrinityAPI(object):
     self.request=request
     self.has_authenticated=False
     self.config(conf_file)
+    self.tenant=self.request.get_header('X-Tenant',default=None)
+    self.token=self.request.get_header('X-Auth-Token',default=None)
     self.set_attrs_from_json()
+    # This is a hack to allow for username/password based authentication for get requests during testing
+    if (not (self.token or hasattr(self,'password'))) and self.request.auth:
+      (self.username,self.password)=self.request.auth
     self.errors()
     self.query = {'userName':self.trinity_user, 'password':self.trinity_password, 'pretty':'1'}
     self.headers={"Content-Type":"application/json", "Accept":"application/json"} # setting this by hand for now
+    self.authenticate()    
 
   def config(self,file):
     config=SafeConfigParser()
@@ -34,8 +40,8 @@ class TrinityAPI(object):
         setattr(self,option,value)
     # special for the non-strings
     #self.trinity_port=config.getint('trinity','trinity_port')
-    #self.trinity_debug=config.getboolean('trinity','trinity_debug')
-  
+    #self.trinity_debug=config.getboolean('trinity','trinity_debug')  
+
   # Get value for a given key from the JSON body of request  
   def set_attrs_from_json(self):
     body_dict=self.request.json
@@ -54,7 +60,7 @@ class TrinityAPI(object):
   def authenticate(self):
     if self.has_authenticated: 
       return
-    if hasattr(self,'token'):
+    if self.token:
       payload = { 
                   "auth": {
                     "tenantName": self.tenant,
@@ -75,13 +81,14 @@ class TrinityAPI(object):
                 }
   
     r = requests.post(self.keystone_host+'/tokens', data=json.dumps(payload), headers=self.headers)
-    self_has_authenticated=True
     self.has_access = (r.status_code  == requests.codes.ok )
-    body = r.json()
-    # self.is_admin = body["access"]["metadata"]["is_admin"]
-    # This is a hack to get around a bug in Keystone
-    self.is_admin = (body['access']['user']['name'] == 'admin')
-    self.token = body["access"]["token"]["id"]
+    if self.has_access: 
+      self.has_authenticated=True
+      body = r.json()
+      # self.is_admin = body["access"]["metadata"]["is_admin"]
+      # This is a hack to get around a bug in Keystone
+      self.is_admin = (body['access']['user']['name'] == 'admin')
+      self.token = body["access"]["token"]["id"]
 
   # xCAT API request
   def xcat(self,verb='GET',path='/',payload={}):
@@ -104,7 +111,7 @@ class TrinityAPI(object):
         if group.startswith(startkey):
           groups.append(group[l:])  
       status_ok=True
-    return {'status_ok':status_ok, name:groups}
+    return {'statusOK':status_ok, name:groups}
    
   def nodes(self):
     self.authenticate()
@@ -113,7 +120,7 @@ class TrinityAPI(object):
     if self.has_access and self.is_admin:
       nodes=self.xcat('GET','/nodes')
       status_ok=True
-    return {'status_ok':status_ok,'nodes':nodes}
+    return {'statusOK':status_ok,'nodes':nodes}
   
   def node_info(self,node):
     self.authenticate()
@@ -133,7 +140,7 @@ class TrinityAPI(object):
         if group.startswith(self.vc): 
           info['cluster']=group[lvc:]
       status_ok=True
-      info['status_ok']=status_ok 
+      info['statusOK']=status_ok
     return info
      
   def group_nodes(self,name,startkey=''):
@@ -148,22 +155,22 @@ class TrinityAPI(object):
       # Hack because of unicode
       if members: nodes=[x.strip() for x in members.split(',')]
       status_ok=True
-    return  {'status_ok':status_ok, 'nodes' : nodes}
+    return  {'statusOK':status_ok, 'nodes' : nodes}
   
   def cluster_nodes(self,cluster):
     self.authenticate()
     ret={}
-    ret['status_ok']=False
+    ret['statusOK']=False
     if not (self.is_admin or self.tenant==cluster):
       return ret
     nodes=self.group_nodes(startkey=self.vc,name=cluster)
-    ret['status_ok']=nodes['status_ok']
-    if not ret['status_ok']:
+    ret['statusOK']=nodes['statusOK']
+    if not ret['statusOK']:
       return ret
     ret['hardware']=defaultdict(int)
     for node in nodes['nodes']:
       info=self.node_info(node)
-      if info['status_ok']:
+      if info['statusOK']:
         ret['hardware'][info['hardware']]+=1
     return ret    
 
@@ -171,29 +178,29 @@ class TrinityAPI(object):
   def cluster_details(self,cluster): 
     self.authenticate()
     ret={}
-    ret['status_ok']=False
+    ret['statusOK']=False
     if not (self.is_admin or self.tenant==cluster):
       return ret
     nodes=self.group_nodes(startkey=self.vc,name=cluster)
-    ret['status_ok']=nodes['status_ok']
-    if not ret['status_ok']:
+    ret['statusOK']=nodes['statusOK']
+    if not ret['statusOK']:
       return ret
     ret['hardware']=defaultdict(list)
     for node in nodes['nodes']:
       info=self.node_info(node)
-      if info['status_ok']:
+      if info['statusOK']:
         ret['hardware'][info['hardware']].append(node)
     return ret    
 
   def hardware_nodes(self,hardware):
     self.authenticate()
     ret={}
-    ret['status_ok']=False
+    ret['statusOK']=False
     if not (self.is_admin):
       return ret
     nodes=self.group_nodes(startkey=self.hw,name=hardware)
-    ret['status_ok']=nodes['status_ok']
-    if not ret['status_ok']:
+    ret['statusOK']=nodes['statusOK']
+    if not ret['statusOK']:
       return ret
     ret['total']=len(nodes['nodes'])
     ret['allocated']=0
@@ -210,7 +217,7 @@ class TrinityAPI(object):
   def cluster_change_nodes(self,cluster,old_list,hw_dict):
     self.authenticate()
     ret={}
-    ret['status_ok']=False
+    ret['statusOK']=False
     xcat_cluster=self.vc+cluster
     if not(self.has_access and self.is_admin):
       return ret 
@@ -262,14 +269,14 @@ class TrinityAPI(object):
       r=self.xcat(verb='PUT',path='/groups/'+xcat_cluster,payload=payload)
       if hasattr(r,'status_code'):   
         if r.status_code == requests.codes.ok:
-          ret['status_ok']=True
+          ret['statusOK']=True
         else:
-          ret['status_ok']=False
+          ret['statusOK']=False
           ret['error']=self.xcat_error
       else:
-        ret['status_ok']=True
+        ret['statusOK']=True
     else:
-      ret['status_ok']=True
+      ret['statusOK']=True
       ret['change']=False
     ret['nodeList']= node_list   
     return ret
@@ -277,7 +284,7 @@ class TrinityAPI(object):
 #  def cluster_update_containers(cluster,new_container_image):
 #    self.authenticate()
 #    ret={}
-#    ret['status_ok']=False
+#    ret['statusOK']=False
 #    if not(self.has_access and (self.is_admin or self.tenant == cluster)):
 #      return ret
 #    node_list=self.group_nodes(name=cluster, startkey=self.vc)
@@ -289,9 +296,19 @@ class TrinityAPI(object):
 trinity = Bottle()
 
 @trinity.get('/trinity/v<version:float>/')
-def dummy(version=1):
-#  body=request.json
-  return "Welcome to Trinity Web UI"
+def welcome(version=1):
+#  req=TrinityAPI(request)
+  return "Welcome to the Trinity API"
+
+@trinity.post('/trinity/v<version:float>/login')
+def login(version=1):
+  req=TrinityAPI(request)
+  if req.has_access:
+    response.status=200
+    return {'token': req.token}
+  else:
+    response.status=401
+    return
 
 @trinity.get('/trinity/v<version:float>/clusters')
 def list_clusters(version=1):
@@ -340,25 +357,26 @@ def show_hardware_details(cluster,version=1):
 def modify_cluster(cluster,version=1):
   req=TrinityAPI(request)
   ret={}
-  ret['status_ok']=False
+  ret['statusOK']=False
   clusters=req.groups(name='clusters',startkey=req.vc)
-  if not clusters['status_ok']:
+  if not clusters['statusOK']:
     return ret
   if cluster in clusters['clusters']:
     ret=update_cluster(req,cluster)
     slurm_needs_update=False
-    if ret['status_ok']:
+    if ret['statusOK']:
       if ret['change']:
         slurm_needs_update=True
   else:
     ret=create_cluster(req,cluster)
-    src_root=req.cluster_path
-    dest_root=os.path.join(req.cluster_path,
-                           req.clusters_dir,
-                           cluster)
-    excludes=[req.clusters_dir]
-    copy_with_excludes(src_root,dest_root,excludes)
-    slurm_needs_update=True 
+    if ret['statusOK']:
+      src_root=req.cluster_path
+      dest_root=os.path.join(req.cluster_path,
+                             req.clusters_dir,
+                             cluster)
+      excludes=[req.clusters_dir]
+      copy_with_excludes(src_root,dest_root,excludes)
+      slurm_needs_update=True 
   
   cont_list=[]
   if slurm_needs_update:
@@ -378,16 +396,6 @@ def modify_cluster(cluster,version=1):
 #    conf_update(slurm,'PartitionName',req.cont_part+' Nodes='+cont_string+' Default=Yes',sep='=')
   return ret
 
-#@trinity.put('/trinity/v<version:float>/clusters/<cluster>/environment')
-#def modify_cluster_environment(cluster,version=1):
-#  req=TrinityAPI(request)
-#  ret={}
-#  ret['status_ok']=False
-  
-
-
-
-
 
 
 # Helper functions
@@ -399,9 +407,9 @@ def create_cluster(req,cluster):
   return ret
 
 def update_cluster(req,cluster):
-  ret={}; ret['status_ok']=False
+  ret={}; ret['statusOK']=False
   r=req.group_nodes(name=cluster,startkey=req.vc) 
-  if not r['status_ok']: return ret
+  if not r['statusOK']: return ret
   old_list=r['nodes']
   r=req.cluster_details(cluster)
   hw_dict=r['hardware']
