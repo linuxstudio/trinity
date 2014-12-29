@@ -48,7 +48,7 @@ start() {
                --net=none \
                --privileged \
                -v /dev/infiniband:/dev/infiniband \
-               -v /cm/shared/:/cm/shared \
+               -v /trinity/clustervision:/trinity/clustervision \
                -v /root:/root \
                -v /home:/home \
                -v /cluster/${VC}:/cluster \
