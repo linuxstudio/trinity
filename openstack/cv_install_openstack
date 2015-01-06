@@ -1,0 +1,23 @@
+#!/bin/bash
+
+cd /etc/yum.repos.d
+for file in * ; do sed -i 's/enabled=0/enabled=1/g' $file; done
+cd -
+
+systemctl stop NetworkManager
+systemctl disable NetworkManager
+yum -y install epel-release
+yum -y install https://rdo.fedorapeople.org/rdo-release.rpm
+yum -y install openstack-packstack
+
+# Now, find a way to get the packstack answers file from the controller
+# to here.
+
+echo $(pwd)
+sed "s/=127.0.0.1/=$(hostname -I)/g" //xcatpost/packstack-answers.txt > /tmp/packstack-answers.txt
+packstack --answer-file /tmp/packstack-answers.txt
+#packstack --allinone
+source ~/keystonerc_admin
+nova floating-ip-bulk-delete 10.3.4.0/22
+
+
