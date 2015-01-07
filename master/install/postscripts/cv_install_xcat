@@ -83,8 +83,8 @@ echo "xcat installed" >> /var/log/postinstall.log
 #--------------------------------------------------------------------------------------
 # cleanup
 #--------------------------------------------------------------------------------------
-# umount /tmp/trinity
-# rmdir /tmp/trinity
+umount /tmp/trinity
+rmdir /tmp/trinity
 
 exit 0
 
