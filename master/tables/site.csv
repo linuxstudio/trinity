@@ -1,0 +1,12 @@
+#key,value,comments,disable
+"domain","cluster",,
+"installdir","/install",,
+"master","192.168.1.254",,
+"forwarders","8.8.8.8,8.8.4.4",,
+"nameservers","<xcatmaster>",,
+"tftpdir","/tftpboot",,
+"xcatdport","3001",,
+"xcatiport","3002",,
+"xcatconfdir","/etc/xcat",,
+"timezone","Europe/Amsterdam",,
+"dhcpinterfaces","eno2,eno3",,
