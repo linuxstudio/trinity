@@ -31,9 +31,11 @@ cp -r /tmp/trinity/compute /trinity
 
 #--------------------------------------------------------------------------------------
 # enable all repositories inside the controller
+# but disable the local repo from master
 #--------------------------------------------------------------------------------------
 cd /etc/yum.repos.d
 for file in * ; do sed -i 's/enabled=0/enabled=1/g' $file; done
+sed -i 's/enabled=1/enabled=0/g' local-repository.repo
 cd -
 
 #--------------------------------------------------------------------------------------
