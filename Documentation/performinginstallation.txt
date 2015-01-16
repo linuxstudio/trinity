@@ -1,0 +1,36 @@
+Performing the installation
+---------------------------
+To start installing a new controller node, select free switch ports on
+the HP switch. The port used will determine the hostname of the new
+controller node (as seen from the master). If you plug into port 3,
+your controller will be called controller03. You will also need to
+plugin the BMC network. We use blue cables for the PXE network and
+black cables for the management network. 
+
+In many cases, the switch port will have been used before, so you need
+to “undiscover” the old node definition from the xCAT configuration.
+This is most easily done by removing the whole of the node definition
+from the xCAT database.
+
+----
+[root@controller ~]# rmnodecfg controllerNN 
+----
+
+[TIP]
+This command will complain that it was unable to remove a file
+`/tftpboot/pxelinux.cfg/<HEX>`. This error is caused by the fact that we
+use XNBA instead of default PXE. You can safely ignore the error
+message.
+
+After that you need to add the node to the xCAT configuration. 
+
+----
+nodeadd controllerNN groups=controllers
+----
+
+Now plug your node’s BMC port and PXE bootable port into the HP switch
+and turn it on. This will start discovery of the node. To check the
+status of the node discovery tail /var/log/messages. After some time
+you should see DHCP requests from the controller logged. The complete
+sequence should look something like this:
+

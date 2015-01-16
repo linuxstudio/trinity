@@ -1,0 +1,27 @@
+<!--
+  <docout>-docinfo.xml DocBook document information file specific for one project.
+  It is used only for output formats like xhtml processed via DocBook with a2x
+-->
+<authorgroup>
+  <author>
+    <firstname>Francesco</firstname>
+    <surname>Minafra</surname>
+    <affiliation>
+      <jobtitle>HPC Project Engineer</jobtitle>
+      <orgname>ClusterVision BV</orgname>
+    </affiliation>
+  </author>
+  <author>
+    <firstname>Alex</firstname>
+    <surname>Ninaber</surname>
+    <affiliation>
+      <jobtitle>Technical Director</jobtitle>
+      <orgname>ClusterVision BV</orgname>
+    </affiliation>
+  </author>
+  <editor>
+    <firstname>Francesco</firstname>
+    <surname>Minafra</surname>
+  </editor>
+</authorgroup>
+

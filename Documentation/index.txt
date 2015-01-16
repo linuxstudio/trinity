@@ -1,0 +1,43 @@
+//      Start Header
+xCAT Master User Manual
+=======================
+//Francesco Minafra <francesco.minafra@clustervision.com>
+//v0.1, 2014-12
+//      End Header - Separate from the rest by a blank line
+
+//      Start Body
+.Git Commit Info
+****
+include::tag[]
+****
+This documentation (link:index.pdf[also available in `.pdf`]) is part 
+of the Trinity project, inspired by work done at University of Illinois <<GMB-HPCaware>>
+//      Definition of custom attribute entries
+//
+
+:numbered:
+//      Start include subsections
+Introduction
+------------
+This document is intended
+to be used by engineers running an _xCAT_ installation for a customer.
+It describes how you can use the existing infrastructure of
+ClusterVision to setup an xCAT controller node to be inserted into the
+customer's data centre.
+
+include::hardwarelayout.txt[]
+
+include::performinginstallation.txt[]
+
+include::references.txt[]
+
+ifdef::backend-docbook[]
+[index]
+Index of Acronyms
+-----------------
+////////////////////////////////////////////////////////////////
+The index is normally left completely empty, it's contents being
+generated automatically by the DocBook toolchain.
+////////////////////////////////////////////////////////////////
+endif::backend-docbook[]
+

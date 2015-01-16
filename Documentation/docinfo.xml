@@ -1,0 +1,14 @@
+<!--
+  docinfo.xml DocBook document information common to all files in the project.
+-->
+<copyright>
+  <year>2015</year>
+  <holder>ClusterVision BV</holder>
+</copyright>
+
+<legalnotice>
+  <simpara>
+    This documentation or parts thereof may not be reproduced in any form
+    unless permitted by contract or by written permission of ClusterVision BV.
+  </simpara>
+</legalnotice>

@@ -1,0 +1,6 @@
+Hardware layout
+---------------
+The xCAT master node accessible via the company network. The xCAT
+master node is connected to an HP switch. The HP switch will be
+connected to the new controllers.
+

@@ -1,0 +1,15 @@
+AsciiDoc documentation for project Trinity with versioning using Git
+
+To compile the document you need to install asciidoc http://asciidoc.org/ 
+from the website or via your linux distribution's package manager.
+If you want to compile only the html type:
+
+make
+
+If you want to compile pdf type (you may need to install other
+packages like dblatex, but these are usually installed as dependencies
+if you use the distribution's packaged version):
+
+make pdf
+
+Other formats (e.g. epub and odt) will be added in the future.

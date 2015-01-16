@@ -1,0 +1,8 @@
+[bibliography]
+Reference Documents
+-------------------
+List of documents referenced in the above sections
+
+[bibliography]
+- [[[GMB-HPCaware]]] 'HPC-Aware VM Placement in Infrastructure Clouds' 
+  http://charm.cs.illinois.edu/newPapers/13-01/paper.pdf[`http://charm.cs.illinois.edu/newPapers/13-01/paper.pdf`]
